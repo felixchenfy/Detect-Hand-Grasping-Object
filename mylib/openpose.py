@@ -14,6 +14,7 @@ sys.path.append(CURR_PATH + "../tf-pose-estimation")
 from tf_pose.networks import get_graph_path, model_wh
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose import common
+import tensorflow as tf
 
 logger = logging.getLogger('TfPoseEstimator')
 logger.setLevel(logging.DEBUG)
@@ -26,8 +27,7 @@ logger.addHandler(ch)
 
 # Settings ===============================================================
 DRAW_FPS = True
-
-
+MAX_FRACTION_OF_GPU = 0.3
 
 # Human pose detection ==============================================================
 
@@ -59,11 +59,16 @@ class SkeletonDetector(object):
         # args = parser.parse_args()
 
         w, h = model_wh(image_size)
+
+        tf_config = tf.ConfigProto()
+        tf_config.gpu_options.per_process_gpu_memory_fraction=MAX_FRACTION_OF_GPU
+        # tf_config = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)#https://stackoverflow.com/questions/34199233/how-to-prevent-tensorflow-from-allocating-the-totality-of-a-gpu-memory
+
         if w == 0 or h == 0:
             e = TfPoseEstimator(get_graph_path(self.model),
-                                target_size=(432, 368))
+                                target_size=(432, 368),tf_config=tf_config)
         else:
-            e = TfPoseEstimator(get_graph_path(self.model), target_size=(w, h))
+            e = TfPoseEstimator(get_graph_path(self.model), target_size=(w, h), tf_config=tf_config)
 
         # self.args = args
         self.w, self.h = w, h
@@ -92,7 +97,8 @@ class SkeletonDetector(object):
     
     def draw(self, img_disp, humans):
         img_disp = TfPoseEstimator.draw_humans(img_disp, humans, imgcopy=False)
-
+        
+    def draw_fps(self, img_disp):
         # logger.debug('show+')
         if DRAW_FPS:
             cv2.putText(img_disp,
@@ -102,7 +108,7 @@ class SkeletonDetector(object):
                         (0, 0, 255), 2)
         self.fps_time = time.time()
 
-    def humans_to_skelsList(self, humans, scale_y = None): # get (x, y * scale_y)
+    def humans_to_skelsList(self, humans, scale_y = 1.0): # get (x, y * scale_y)
         if scale_y is None:
             scale_y = self.scale_y
         skelsList = []
@@ -116,6 +122,43 @@ class SkeletonDetector(object):
             skelsList.append(skeleton)
         return skelsList
     
+    def get_hands(self, humans):
+
+        
+        skelsList = self.humans_to_skelsList(humans)
+        def predict_hand_position(skel, idx_wrist,
+                ratio = 0.4 # (wrist to hand)/(wrist to elbow)        
+            ):
+            idx_elbow = idx_wrist - 1
+            wx, wy = skel[idx_wrist*2], skel[idx_wrist*2+1]
+            ex, ey = skel[idx_elbow*2], skel[idx_elbow*2+1]
+            hx = wx + (wx - ex) * ratio
+            hy = wy + (wy - ey) * ratio
+            return [hx, hy]
+
+        NaN = 0
+        LEFT_WRIST = 4
+        RIGH_WRIST = 7
+        hands = []
+        for skeleton in skelsList:
+            if skeleton[LEFT_WRIST] != NaN:
+                hands.append(predict_hand_position(skeleton, LEFT_WRIST))
+            if skeleton[RIGH_WRIST] != NaN:
+                hands.append(predict_hand_position(skeleton, RIGH_WRIST))
+            
+        return hands 
+
+    def get_hands_in_xy(self, humans):
+        
+        hands = self.get_hands(humans)
+
+        # Change coordinate to pixel
+        for i, hand in enumerate(hands):
+            x = int(hand[0]*self.image_w)
+            y = int(hand[1]*self.image_h)
+            hands[i] = [x, y]
+        return hands
+
     @staticmethod
     def get_ith_skeleton(skelsList, ith_skeleton=0):
         res = np.array(skelsList[ith_skeleton])

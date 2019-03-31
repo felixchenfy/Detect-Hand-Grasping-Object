@@ -111,4 +111,4 @@ def drawActionResult(img_display, skeleton, str_action_type):
     TEST_ROW = int( miny - 10 * box_scale)
 
     img_display = cv2.putText(
-        img_display, str_action_type, (TEST_COL, TEST_ROW), font, fontsize, (0, 0, 255), linewidth, cv2.LINE_AA)
+        img_display, str_action_type, (TEST_COL, TEST_ROW), font, fontsize, (0, 0, 255), linewidth)

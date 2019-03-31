@@ -3,6 +3,7 @@ import cv2
 import numpy as np 
 import time
 
+from .funcs import get_filenames
 LENGTH_OF_IMAGE_INFO = 5 # see mylib/myio.py: [cnt_action, cnt_clip, cnt_image, action_type, filepath]
 
 
@@ -33,7 +34,7 @@ class DataLoader_folder(object):
     def __init__(self, folder, num_skip = 0):
         self.cnt_image = 0
         self.folder = folder
-        self.filenames = myfunc.get_filenames(folder, sort = True)
+        self.filenames = get_filenames(folder, sort = True)
         self.idx_step = num_skip + 1
         self.num_images = int( len(self.filenames) / self.idx_step)
 

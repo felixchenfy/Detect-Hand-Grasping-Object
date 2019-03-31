@@ -53,7 +53,7 @@ else:
 if __name__ == "__main__":
  
     # -- Detect sekelton
-    my_detector = SkeletonDetector(OpenPose_MODEL, openpose_image_size)
+    model_openpose = SkeletonDetector(OpenPose_MODEL, openpose_image_size)
 
     # -- Load images
     if FROM_WEBCAM:
@@ -71,20 +71,15 @@ if __name__ == "__main__":
         print("\nProcessing {}/{}th image\n".format(ith_img, images_loader.num_images))
 
         # Detect skeleton
-        humans = my_detector.detect(img)
-        skelsList = my_detector.humans_to_skelsList(humans)
+        humans = model_openpose.detect(img)
+        hands = model_openpose.get_hands_in_xy(humans)
 
-        if len(skelsList) > 0:
-
-            # Loop through all skeletons
-            for ith_skel in range(0, len(skelsList)):
-                skeleton = SkeletonDetector.get_ith_skeleton(skelsList, ith_skel)
-                
-                # Draw skeleton
-                my_detector.draw(image_disp, humans)
-                    
-        else:
-            classifier.reset() # clear the deque
+        if 1: # Draw skeleton
+            model_openpose.draw(image_disp, humans)
+            model_openpose.draw_fps(image_disp)
+            for hand in hands:
+                cv2.circle(image_disp, center=(hand[0], hand[1]), radius = 10,
+                    color = [255, 0, 0], thickness=2, lineType=cv2.LINE_AA) 
 
         # Write result to png
         if 1:

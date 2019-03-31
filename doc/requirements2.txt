@@ -1,0 +1,8 @@
+colorama
+fire
+numba
+torch
+torchvision
+dill
+psutil
+requests
