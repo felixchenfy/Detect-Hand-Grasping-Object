@@ -1,9 +1,39 @@
 
-# ======================================================================
-# 1. Install environment
+# This is a toy project for fun!
+
+
+# Demo
+
+![](https://github.com/felixchenfy/Data-Storage/raw/master/Detect-Hand-Grasping-Object/demo-Detect-Hand-Grasping-Object.gif)
+
+# Details
+
+**What's this?**  
+The program can **detect me grasping the object**, and then mask the grasped object with box and red mask.
+
+**Algorithms:**  
+I used Mask RCNN to detect objects in the first frame of the video. Then use SiamMask to track the objects. Meanwhile, OpenPose is used to detect my hand wrist.  
+If my hand coincides with the object, it's considered to be a grasp, and the object is added with a mark.
+
+
+**Warning:**  
+This project is just for fun. No practical usage.
+
+# How I made this demo video (How to run code)
+
+1. Adjust my laptop's camera to a proper angle as shown in the demo. Put 2 objects on table.
+2. Run this file "demo_maskrcnn.ipynb". It reads an image from the camera, detect the objects, and save their bounding box positions into "boxes_pos.txt".
+3. Run "$ python main_detect_hand_grasping_object.py". The program starts tracking objects and my hands.   
+Meanwhile, as you can see, I used my smart phone to record the video.
+
+
+
+# Install environment
 
 Please first clone my project and cd into it.   
 Then I followed the following steps sequencially to setup the environment for the 3 github repos that I used.
+
+(References: SiamMask, Mask_RCNN, tf-pose-estimation. Thanks!)
 
 ```
 
@@ -45,10 +75,9 @@ cd $MyRoot
  
 
 
-# ======================================================================
-# 2. Test
+# Test if install is good
 
-## 2.1 .SiamMask
+## (1) SiamMask
 $ python demo_siammask.py
 
 ```
@@ -58,29 +87,14 @@ $ python ../../tools/demo.py --resume SiamMask_DAVIS.pth --config config_davis.j
 $ python ../../tools/demo.py --resume SiamMask_DAVIS.pth --config config_my_bottle.json --base_path ../../data/my_bottle  
 ```
 
-## 2.2. Mask RCNN
+## (2) Mask RCNN
 see: demo.ipynb
 
-## 2.3. OpenPose
+## (3) OpenPose
 $ python demo_openpose.py
 
-## 2.4. Yolo (Not used)
+## (4) Yolo (Not used)
 ```
 $ ./darknet detector test ./cfg/coco.data ./cfg/yolov3.cfg ./yolov3.weights ../images/00001.png  
 $ ./darknet detector test ./cfg/coco.data ./cfg/yolov3.cfg ./yolov3.weights ../images2/00001.png  
 ```
-
-
-# ======================================================================
-# Others
-
-## Versions
-* SiamMask work with cpu:  
-https://github.com/foolwood/SiamMask/issues/15
-
-
-## Installation problems
-
-* Torch not working with python 3.7:
-https://github.com/HazyResearch/metal/issues/101
-Use a specific version: torch==0.4.1.post2

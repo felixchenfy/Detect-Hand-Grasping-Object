@@ -127,7 +127,7 @@ class SkeletonDetector(object):
         
         skelsList = self.humans_to_skelsList(humans)
         def predict_hand_position(skel, idx_wrist,
-                ratio = 0.4 # (wrist to hand)/(wrist to elbow)        
+                ratio = 1.0 # (wrist to hand)/(wrist to elbow)        
             ):
             idx_elbow = idx_wrist - 1
             wx, wy = skel[idx_wrist*2], skel[idx_wrist*2+1]

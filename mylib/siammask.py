@@ -55,6 +55,8 @@ class SiamMaskTracker(object):
         print("\nlocation:", location) # [364.17523 417.03296 240.6001  348.26935 365.40112 123.98926 488.97626 192.75287]
         '''
         mask = self.state['mask'] > self.state['p'].seg_thr
+        self.mask = mask
+        self.location = location
         return mask, location
 
     def draw_mask_onto_image(self, image_disp, mask, location):
